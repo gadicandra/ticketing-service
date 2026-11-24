@@ -1,0 +1,24 @@
+flowchart LR
+  buyer([Pembeli / Browser])
+  admin([Admin])
+  dev([Laptop: AWS CLI + Docker])
+  subgraph AWS["AWS Sandbox - us-east-1"]
+    furl["Lambda Function URL<br/>auth NONE + CORS<br/>(pengganti API Gateway)"]
+    s3[("S3: ticket-artifacts<br/>image .tar.gz, versioning<br/>(pengganti ECR)")]
+    cw["CloudWatch Logs"]
+    subgraph VPC["Default VPC"]
+      ec2["EC2 t3.micro<br/>Docker: ticket-web (Nginx :80)<br/>LabInstanceProfile<br/>SG: ticket-web-sg"]
+      lambda["Lambda: ticket-api<br/>zip, nodejs22.x, LabRole<br/>SG: ticket-lambda-sg"]
+      rds[("RDS MySQL 8 db.t3.micro<br/>Single-AZ, private<br/>SG: ticket-db-sg<br/>(pengganti DynamoDB)")]
+    end
+  end
+  buyer -- "HTTP :80" --> ec2
+  buyer -- "HTTPS fetch" --> furl
+  admin -- "HTTPS" --> furl
+  furl -- "resource policy" --> lambda
+  lambda -- "MySQL 3306 TLS, SG to SG" --> rds
+  ec2 -- "MySQL 3306, buat tabel" --> rds
+  lambda -. logs .-> cw
+  dev -- "docker save, s3 cp" --> s3
+  s3 -- "s3 cp, docker load" --> ec2
+  dev -- "SSH :22 dari IP laptop" --> ec2
