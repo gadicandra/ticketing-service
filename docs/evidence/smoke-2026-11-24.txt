@@ -1,0 +1,19 @@
+POST /events/smoke-1795529799/seats -> 201 {"eventId":"smoke-1795529799","seatId":"A-1","price":150000,"status":"AVAILABLE"}
+POST /events/smoke-1795529799/seats -> 201 {"eventId":"smoke-1795529799","seatId":"A-2","price":150000,"status":"AVAILABLE"}
+POST /events/smoke-1795529799/seats -> 409 {"message":"seat already exists"}
+POST /events/smoke-1795529799/seats -> 400 {"message":"valid seatId and integer price (IDR) are required"}
+POST /events/smoke-1795529799/seats/Z-999/hold -> 404 {"message":"seat not found"}
+POST /events/smoke-1795529799/seats/A-1/hold -> 200 {"holdToken":"9855a992-2899-4ef9-a657-6fea0e6a5609","holdExpiresAt":1795530105,"seat":{"eventId":"smoke-1795529799","seatId":"A-1","price":150000,"status":"HELD","holdExpiresAt":1795530105}}
+POST /events/smoke-1795529799/seats/A-1/hold -> 409 {"reason":"SEAT_HELD"}
+GET /events/smoke-1795529799/seats/A-1 -> 200 {"eventId":"smoke-1795529799","seatId":"A-1","price":150000,"status":"HELD","holdExpiresAt":1795530105}
+POST /events/smoke-1795529799/seats/A-1/confirm -> 403 {"reason":"INVALID_HOLD"}
+POST /events/smoke-1795529799/seats/A-1/confirm -> 200 {"orderId":"9855a992-2899-4ef9-a657-6fea0e6a5609","seat":{"eventId":"smoke-1795529799","seatId":"A-1","price":150000,"status":"SOLD"}}
+POST /events/smoke-1795529799/seats/A-1/confirm -> 200 {"orderId":"9855a992-2899-4ef9-a657-6fea0e6a5609","seat":{"eventId":"smoke-1795529799","seatId":"A-1","price":150000,"status":"SOLD"},"idempotent":true}
+POST /events/smoke-1795529799/seats/A-1/hold -> 409 {"reason":"SEAT_SOLD"}
+PUT /events/smoke-1795529799/seats/A-1 -> 409 {"reason":"SEAT_SOLD"}
+PUT /events/smoke-1795529799/seats/A-2 -> 200 {"eventId":"smoke-1795529799","seatId":"A-2","price":175000,"status":"AVAILABLE"}
+GET /events/smoke-1795529799/seats?status=AVAILABLE -> 200 [{"eventId":"smoke-1795529799","seatId":"A-2","price":175000,"status":"AVAILABLE"}]
+DELETE /events/smoke-1795529799/seats/A-1 -> 409 {"reason":"SEAT_SOLD"}
+DELETE /events/smoke-1795529799/seats/A-2 -> 204 
+GET /events/smoke-1795529799/seats/A-2 -> 404 {"message":"seat not found"}
+ALL PASSED

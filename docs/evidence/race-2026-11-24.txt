@@ -1,0 +1,10 @@
+buyer-5 -> 200
+buyer-1 -> 409
+buyer-2 -> 409
+buyer-3 -> 409
+buyer-9 -> 409
+buyer-8 -> 409
+buyer-7 -> 409
+buyer-10 -> 409
+buyer-6 -> 409
+buyer-4 -> 409
