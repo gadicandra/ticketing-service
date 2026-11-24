@@ -1,0 +1,6 @@
+{
+  "name": "ticket-api",
+  "type": "module",
+  "private": true,
+  "dependencies": { "mysql2": "^3.24.0" }
+}
