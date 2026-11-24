@@ -1,0 +1,5 @@
+infra.env
+node_modules/
+*.zip
+*.tar.gz
+out.json
