@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Denah Kursi</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    #seats { display: flex; flex-wrap: wrap; gap: .5rem; }
+    button { width: 5rem; padding: .6rem 0; border: 1px solid #888; border-radius: .4rem; cursor: pointer; }
+    .AVAILABLE { background: #d9f2d9; } .HELD { background: #fff1b8; } .SOLD { background: #eee; color: #999; }
+  </style>
+  <script src="config.js"></script>
+</head>
+<body>
+  <h1>Denah Kursi</h1>
+  <label>Acara <input id="event" value="demo-konser"></label>
+  <label>Buyer ID <input id="buyer" value="buyer-web"></label>
+  <button id="load" type="button">Muat</button>
+  <p id="msg" role="status"></p>
+  <div id="seats"></div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const base = () => `${window.API_URL}/events/${encodeURIComponent($("event").value)}/seats`;
+
+    async function load() {
+      const r = await fetch(base());
+      const seats = r.ok ? await r.json() : [];
+      $("seats").replaceChildren(...seats.map((s) => {
+        const b = document.createElement("button");
+        b.className = s.status;
+        b.textContent = s.seatId;                       // textContent, never innerHTML
+        b.title = `${s.status} - Rp${s.price}`;
+        b.disabled = s.status !== "AVAILABLE";
+        b.onclick = () => hold(s.seatId);
+        return b;
+      }));
+      $("msg").textContent = r.ok ? `${seats.length} kursi` : `Gagal memuat (${r.status})`;
+    }
+
+    async function hold(seatId) {
+      const r = await fetch(`${base()}/${seatId}/hold`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ buyerId: $("buyer").value }),
+      });
+      const body = await r.json();
+      $("msg").textContent = r.ok ? `Kursi ${seatId} ditahan sampai ${new Date(body.holdExpiresAt * 1000).toLocaleTimeString()}` : `Gagal: ${body.reason ?? body.message}`;
+      load();
+    }
+
+    $("load").onclick = load;
+    load();
+  </script>
+</body>
+</html>
